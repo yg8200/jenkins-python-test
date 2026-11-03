@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Test output
+.pytest_cache/
+junit.xml
+
+# Runtime output and local configuration
+logs/
+aws.json
+
+# macOS
+.DS_Store
