@@ -374,6 +374,11 @@ class TestBooksClass:
         assert result == (0, 'Title')  # No books left, title of deleted book returned
         assert books.get_book_by_id(1) is None
 
+    # adding a failed test to see it in jenkins
+    def test_add_book_invalid_genre(self):
+        books = Books()
+        with pytest.raises(ValueError):
+            books.add_book('Title', 'Author', 2000, 20, ['INVALID_GENRE'])
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
