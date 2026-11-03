@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Setting up Python environment and dependencies...'
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install flask pytest
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests via Makefile...'
+                sh '''
+                    . venv/bin/activate
+                    make test-ci
+                '''
+            }
+            post {
+                always {
+                    junit 'junit.xml'
+                }
+            }
+        }
+
+        stage('Release') {
+            when {
+                allOf {
+                    branch 'main'
+                    changelog '^((?!Release|Automated).)*$'
+                }
+            }
+            steps {
+                echo 'Build on main branch – Going to release'
+                
+                
+                withCredentials([gitUsernamePassword(credentialsId: '12345678', gitToolName: 'Default')]) {
+                    sh '''
+                        git tag -a "v1.0.${BUILD_NUMBER}" -m "Release build ${BUILD_NUMBER}"
+                        git push origin "v1.0.${BUILD_NUMBER}"
+                    '''
+                }
+                
+
+                sh '''
+                    echo "Releasing version for build #${BUILD_NUMBER}..."
+                '''
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Pipeline failed! Check the console logs for debugging.'
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+    }
+}
